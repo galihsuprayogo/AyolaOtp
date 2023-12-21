@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-type autoCompleteEnum = 'email' | 'password' | 'password-new'
+type autoCompleteEnum = 'username' | 'email' | 'password' | 'password-new'
 type keyboardTypeEnum =
   | 'number-pad'
   | 'email-address'

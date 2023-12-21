@@ -1,36 +1,35 @@
-import React, { type RefObject, useRef, useState, useEffect } from 'react'
+import React, { type RefObject, useRef, useState } from 'react'
+import { type NavigationProp, useNavigation } from '@react-navigation/native'
+import { type RootStackProps } from 'interfaces'
 import {
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   Text,
   type TextInput,
-  View,
   useWindowDimensions,
-  Pressable,
+  StatusBar,
+  ScrollView,
 } from 'react-native'
-import { IconVisibility, IconVisibilityOff, ImgAyola } from 'assets'
-import FastImage from 'react-native-fast-image'
-import { useNavigation, type NavigationProp } from '@react-navigation/native'
-import type { AuthProps, RootStackProps } from 'interfaces'
 import { ButtonGlobal, FormInput } from 'components'
-import { gray, primary, regexPassword, showWarningMessage } from 'utils'
+import { gray, primary, regexEmail, regexPassword } from 'utils'
+import { IconVisibility, IconVisibilityOff } from 'assets'
 import _ from 'lodash'
-import { useSelector } from 'react-redux'
-import { selectAuthState } from 'states'
 
-const SigninPage = () => {
+const RegisterPage = () => {
   const { height, width } = useWindowDimensions()
-  const navigation = useNavigation<NavigationProp<RootStackProps, 'Signin'>>()
-  const auth: AuthProps = useSelector(selectAuthState)
+  const navigation = useNavigation<NavigationProp<RootStackProps, 'Register'>>()
   const [showPassword, setShowPassword] = useState<boolean>(true)
-  const [isLoadingHelper, setIsLoadingHelper] = useState<boolean>(true)
   const formRef = useRef<Array<RefObject<TextInput> | any>>([
     { current: 0 },
     { current: 1 },
+    { current: 2 },
   ]).current
   const [form, setForm] = useState<{
     username?: {
+      value?: string
+      focus?: boolean
+      msg?: string
+    }
+    email?: {
       value?: string
       focus?: boolean
       msg?: string
@@ -42,40 +41,55 @@ const SigninPage = () => {
     }
   }>()
 
-  useEffect(() => {
-    setIsLoadingHelper(true)
-    const mount = setTimeout(() => {
-      // check if user already register & get matching from redux store
-      // then redirect to main page
-      if (auth.username) {
-        if (form?.username?.value === auth.username) {
-          navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
-        }
-      }
-      setIsLoadingHelper(false)
-    })
-    return () => clearTimeout(mount)
-  }, [])
-
   const onChangeUsername = (value: string) => {
     if (value.trim()) {
       setForm({
         username: { ...form?.username, value, msg: undefined },
+        email: { ...form?.email },
         pwd: { ...form?.pwd },
       })
     } else {
       setForm({
         username: { ...form?.username, value, msg: '*Silahkan Masukkan Username' },
+        email: { ...form?.email },
         pwd: { ...form?.pwd },
       })
     }
   }
 
+  const onChangeEmail = (value: string) => {
+    if (value.trim()) {
+      if (regexEmail(value.trim())) {
+        setForm({
+          email: { ...form?.email, msg: undefined, value },
+          username: { ...form?.username },
+          pwd: { ...form?.pwd },
+        })
+      } else {
+        setForm({
+          email: {
+            ...form?.email,
+            msg: '*Format email belum benar (email@example.com)',
+            value,
+          },
+          username: { ...form?.username },
+          pwd: { ...form?.pwd },
+        })
+      }
+    } else {
+      setForm({
+        email: { ...form?.email, msg: '*Silahkan Masukkan Email', value },
+        username: { ...form?.username },
+        pwd: { ...form?.pwd },
+      })
+    }
+  }
   const onChangePwd = (value: string) => {
     if (value.trim()) {
       if (regexPassword(value.trim())) {
         setForm({
           pwd: { ...form?.pwd, msg: undefined, value },
+          email: { ...form?.email },
           username: { ...form?.username },
         })
       } else {
@@ -85,6 +99,7 @@ const SigninPage = () => {
             msg: '*Min 8 char, contain uppercase, lowercase, & symbol',
             value,
           },
+          email: { ...form?.email },
           username: { ...form?.username },
         })
       }
@@ -92,31 +107,19 @@ const SigninPage = () => {
       setForm({
         pwd: { ...form?.pwd, msg: '*Silahkan Masukkan Password', value },
         username: { ...form?.username },
+        email: { ...form?.email },
       })
     }
   }
 
-  const onContinue = () => {
-    if (form?.username?.value?.trim() && form?.pwd?.value?.trim()) {
-      if (!form.username.msg && !form?.pwd?.msg) {
-        console.log(form)
-        if (auth.username) {
-          if (auth.username === form.username.value) {
-            navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
-          } else {
-            showWarningMessage({
-              title: 'Information',
-              desc: 'User is not registered, please register first!',
-              duration: 2000,
-            })
-          }
-        } else {
-          showWarningMessage({
-            title: 'Information',
-            desc: 'User is not registered, please register first!',
-            duration: 2000,
-          })
-        }
+  const onRegister = () => {
+    if (form?.username?.value?.trim() && form?.email?.value?.trim() && form?.pwd?.value?.trim()) {
+      if (!form.username.msg && !form?.email?.msg && !form?.pwd?.msg) {
+        navigation.navigate('Verify', {
+          username: form.username.value,
+          email: form.email.value,
+          password: form.pwd.value,
+        })
       }
     }
     setForm({
@@ -124,6 +127,11 @@ const SigninPage = () => {
         ...form?.username,
         msg: form?.username?.value ? undefined : '*Silahkan Masukkan Username',
         value: form?.username?.value,
+      },
+      email: {
+        ...form?.email,
+        msg: form?.email?.value ? undefined : '*Silahkan Masukkan Email',
+        value: form?.email?.value,
       },
       pwd: {
         ...form?.pwd,
@@ -133,7 +141,7 @@ const SigninPage = () => {
     })
   }
 
-  return isLoadingHelper ? null : (
+  return (
     <SafeAreaView
       style={{
         flex: 1,
@@ -154,32 +162,17 @@ const SigninPage = () => {
           backfaceVisibility: 'hidden',
         }}
       >
-        <View
+        <Text
           style={{
-            alignItems: 'center',
-            marginBottom: height * 0.031,
+            fontSize: height * (21 / 801),
+            fontWeight: '700',
+            color: '#000000',
+            textAlign: 'left',
+            marginBottom: height * (18 / 801),
           }}
         >
-          <FastImage
-            style={{
-              height: height * (80 / 801),
-              width: width * (155 / 361),
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            resizeMode='contain'
-            source={ImgAyola}
-          />
-          <Text
-            style={{
-              fontSize: height * (18 / 801),
-              fontWeight: '700',
-              color: '#000000',
-            }}
-          >
-            Login to Ayola
-          </Text>
-        </View>
+          Register to Ayola
+        </Text>
         <FormInput
           ref={formRef[0]}
           autoComplete='username'
@@ -203,18 +196,56 @@ const SigninPage = () => {
           onFocus={() =>
             setForm({
               username: { ...form?.username, focus: true },
+              email: { ...form?.email },
               pwd: { ...form?.pwd },
             })
           }
           onBlurPressed={() =>
             setForm({
               username: { ...form?.username, focus: false },
+              email: { ...form?.email },
               pwd: { ...form?.pwd },
             })
           }
         />
         <FormInput
           ref={formRef[1]}
+          autoComplete='email'
+          autoCapitalize='none'
+          widthContainer='100%'
+          widthTextInput='100%'
+          color={gray[500]}
+          backgroundColor='#FFFFFF'
+          borderWidth={1}
+          borderRadius={height * (8 / 801)}
+          borderColor={form?.email?.focus ? primary[500] : gray[300]}
+          errorMsg={form?.email?.msg}
+          height={height * (50 / 801)}
+          placeholder='email@example.com'
+          isHasTitle
+          title='Email'
+          fontSize={height * 0.0171}
+          paddingX={6}
+          marginTop={height * 0.018}
+          value={form?.email?.value}
+          onChangeText={(value) => onChangeEmail(value)}
+          onFocus={() =>
+            setForm({
+              email: { ...form?.email, focus: true },
+              username: { ...form?.username },
+              pwd: { ...form?.pwd },
+            })
+          }
+          onBlurPressed={() =>
+            setForm({
+              email: { ...form?.email, focus: false },
+              username: { ...form?.username },
+              pwd: { ...form?.pwd },
+            })
+          }
+        />
+        <FormInput
+          ref={formRef[2]}
           autoCapitalize='none'
           autoComplete='password'
           widthContainer='100%'
@@ -253,63 +284,39 @@ const SigninPage = () => {
           value={form?.pwd?.value}
           onChangeText={(value) => onChangePwd(value)}
           onFocus={() =>
-            setForm({ pwd: { ...form?.pwd, focus: true }, username: { ...form?.username } })
+            setForm({
+              pwd: { ...form?.pwd, focus: true },
+              username: { ...form?.username },
+              email: { ...form?.email },
+            })
           }
           onBlurPressed={() =>
-            setForm({ pwd: { ...form?.pwd, focus: false }, username: { ...form?.username } })
+            setForm({
+              pwd: { ...form?.pwd, focus: false },
+              username: { ...form?.username },
+              email: { ...form?.email },
+            })
           }
         />
-        <View>
-          <ButtonGlobal
-            title='Masuk'
-            titleColor='#FFFFFF'
-            titleFontSize={height * (16 / 801)}
-            backgroundColor={primary[500]}
-            width='100%'
-            height={height * (44 / 801)}
-            borderRadius={height * (8 / 801)}
-            marginTop={height * (24 / 801)}
-            marginBottom={height * (16 / 801)}
-            onPress={() =>
-              _.throttle(() => {
-                onContinue()
-              })()
-            }
-          />
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text
-              style={{
-                fontSize: height * (14 / 801),
-                color: gray[500],
-                textAlign: 'center',
-                marginHorizontal: width * (3 / 361),
-              }}
-            >
-              Belum punya akun?
-            </Text>
-            <Pressable onPress={() => navigation.navigate('Register')}>
-              <Text
-                style={{
-                  fontSize: height * (15 / 801),
-                  color: '#1d4ed8',
-                  textAlign: 'center',
-                  fontWeight: '600',
-                }}
-              >
-                Register
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <ButtonGlobal
+          title='Register'
+          titleColor='#FFFFFF'
+          titleFontSize={height * (16 / 801)}
+          backgroundColor={primary[500]}
+          width='100%'
+          height={height * (44 / 801)}
+          borderRadius={height * (8 / 801)}
+          marginTop={height * (24 / 801)}
+          marginBottom={height * (16 / 801)}
+          onPress={() =>
+            _.throttle(() => {
+              onRegister()
+            })()
+          }
+        />
       </ScrollView>
     </SafeAreaView>
   )
 }
 
-export default SigninPage
+export default RegisterPage

@@ -11,6 +11,7 @@ module.exports = {
           '@components': './src/components',
           '@interfaces': './src/interfaces',
           '@screens': './src/screens',
+          '@states': './src/states',
           '@router': './src/router',
           '@utils': './src/utils',
         },

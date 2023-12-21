@@ -1,7 +1,7 @@
 import React from 'react'
 import { SafeAreaView, StyleSheet, Text } from 'react-native'
 
-const HomePage = () => {
+export const HomePage = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={{ color: '#000' }}>Home Page</Text>
@@ -16,4 +16,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 })
-export default HomePage

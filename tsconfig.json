@@ -10,6 +10,7 @@
       "@interfaces/*": ["src/interfaces/*"],
       "@router/*": ["src/router/*"],
       "@screens/*": ["src/screens/*"],
+      "@states/*": ["src/states/*"],
       "@utils/*": ["src/utils/*"]
     }
   }
