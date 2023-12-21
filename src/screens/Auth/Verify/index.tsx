@@ -1,14 +1,11 @@
 import React, { type RefObject, useEffect, useRef, useState } from 'react'
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import {
   type RouteProp,
   useRoute,
   useNavigation,
-  type CompositeNavigationProp,
   type NavigationProp,
-  StackActions,
 } from '@react-navigation/native'
-import type { RootBottomTabProps, RootStackProps } from 'interfaces'
+import type { RootStackProps } from 'interfaces'
 import {
   SafeAreaView,
   Text,
@@ -35,13 +32,7 @@ const VerifyPage = () => {
   const { height, width } = useWindowDimensions()
   const dispatch = useDispatch()
   const route = useRoute<RouteProp<RootStackProps, 'Verify'>>()
-  const navigation =
-    useNavigation<
-      CompositeNavigationProp<
-        NavigationProp<RootStackProps, 'Verify'>,
-        BottomTabNavigationProp<RootBottomTabProps>
-      >
-    >()
+  const navigation = useNavigation<NavigationProp<RootStackProps, 'Verify'>>()
   const [isResendOtp, setIsResendOtp] = useState<boolean>(false)
   const [time, setTime] = useState<number>(30)
   const otpInputRef = useRef<Array<RefObject<TextInput> | any>>([
@@ -221,7 +212,7 @@ const VerifyPage = () => {
                         desc: 'Sucessfully registered user, fill username & password to continue to the App',
                         duration: 3000,
                       })
-                      navigation.dispatch(StackActions.replace('Signin'))
+                      navigation.reset({ index: 0, routes: [{ name: 'Signin' }] })
                     } else {
                       showWarningMessage({
                         title: 'Wrong OTP',

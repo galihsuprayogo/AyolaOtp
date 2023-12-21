@@ -46,8 +46,6 @@ const SigninPage = () => {
   useEffect(() => {
     setIsLoadingHelper(true)
     const mount = setTimeout(() => {
-      // check if user already register & get matching from redux store
-      // then redirect to main page
       if (auth.token) {
         navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
       }
@@ -290,7 +288,7 @@ const SigninPage = () => {
                 fontSize: height * (14 / 801),
                 color: gray[500],
                 textAlign: 'center',
-                marginHorizontal: width * (3 / 361),
+                marginHorizontal: width * (6 / 361),
               }}
             >
               Belum punya akun?

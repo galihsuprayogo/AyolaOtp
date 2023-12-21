@@ -1,5 +1,5 @@
 import React, { type RefObject, useRef, useState } from 'react'
-import { type NavigationProp, useNavigation } from '@react-navigation/native'
+import { type NavigationProp, useNavigation, StackActions } from '@react-navigation/native'
 import { type RootStackProps } from 'interfaces'
 import {
   SafeAreaView,
@@ -115,11 +115,13 @@ const RegisterPage = () => {
   const onRegister = () => {
     if (form?.username?.value?.trim() && form?.email?.value?.trim() && form?.pwd?.value?.trim()) {
       if (!form.username.msg && !form?.email?.msg && !form?.pwd?.msg) {
-        navigation.navigate('Verify', {
-          username: form.username.value,
-          email: form.email.value,
-          password: form.pwd.value,
-        })
+        navigation.dispatch(
+          StackActions.replace('Verify', {
+            username: form.username.value,
+            email: form.email.value,
+            password: form.pwd.value,
+          })
+        )
       }
     }
     setForm({
