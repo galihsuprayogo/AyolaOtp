@@ -16,12 +16,13 @@ import type { AuthProps, RootStackProps } from 'interfaces'
 import { ButtonGlobal, FormInput } from 'components'
 import { gray, primary, regexPassword, showWarningMessage } from 'utils'
 import _ from 'lodash'
-import { useSelector } from 'react-redux'
-import { selectAuthState } from 'states'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectAuthState, setAuth } from 'states'
 
 const SigninPage = () => {
   const { height, width } = useWindowDimensions()
   const navigation = useNavigation<NavigationProp<RootStackProps, 'Signin'>>()
+  const dispatch = useDispatch()
   const auth: AuthProps = useSelector(selectAuthState)
   const [showPassword, setShowPassword] = useState<boolean>(true)
   const [isLoadingHelper, setIsLoadingHelper] = useState<boolean>(true)
@@ -47,10 +48,8 @@ const SigninPage = () => {
     const mount = setTimeout(() => {
       // check if user already register & get matching from redux store
       // then redirect to main page
-      if (auth.username) {
-        if (form?.username?.value === auth.username) {
-          navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
-        }
+      if (auth.token) {
+        navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
       }
       setIsLoadingHelper(false)
     })
@@ -99,14 +98,17 @@ const SigninPage = () => {
   const onContinue = () => {
     if (form?.username?.value?.trim() && form?.pwd?.value?.trim()) {
       if (!form.username.msg && !form?.pwd?.msg) {
-        console.log(form)
         if (auth.username) {
-          if (auth.username === form.username.value) {
+          if (
+            auth.username === form.username.value.trim() &&
+            auth.password === form.pwd.value.trim()
+          ) {
+            dispatch(setAuth({ token: 'asd' }))
             navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
           } else {
             showWarningMessage({
               title: 'Information',
-              desc: 'User is not registered, please register first!',
+              desc: 'Username/Password doesnt match',
               duration: 2000,
             })
           }

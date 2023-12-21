@@ -2,3 +2,4 @@ export const regexEmail = (value: string) => /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\
 // min 8 char, uppercase, lowecase, & special char
 export const regexPassword = (value: string) =>
   /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[#?!@$%^&*-]).{8,}$/.test(value)
+export const regexOnlyNumbers = (value: string) => /^[0-9\b]+$/.test(value)
